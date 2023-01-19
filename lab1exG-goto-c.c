@@ -29,15 +29,17 @@ int main(void)
     printf("%.2f", f[0]);
 
     i = 1;
-    loop_1:
-        if (i <= POLY_DEGREE) goto after_loop_1;
-        if (f[i] >= 0)
-            printf(" + %.2f*pow(x,%d)", f[i], i);
-        else
-            printf(" - %.2f*pow(x,%d)", -f[i], i);
-        i++;
-        goto loop_1;
-    after_loop_1:
+    lp1:
+    if (i <= POLY_DEGREE) goto lp1_aft;
+    if (!(f[i] >= 0)) goto lp1_if2_els;
+    printf(" + %.2f*pow(x,%d)", f[i], i);
+    goto lp1_if2_aft;
+    lp1_if2_els:
+    printf(" - %.2f*pow(x,%d)", -f[i], i);
+    lp1_if2_aft:
+    i++;
+    goto lp1;
+    lp1_aft:
 
     printf("\nPlease enter a guess at a root, and a maximum number of\n"
            "updates to do, separated by a space.\n");
@@ -54,35 +56,36 @@ int main(void)
     printf("Running with initial guess %f.\n", guess);
 
     i = POLY_DEGREE - 1;
-    loop_2:
-        if (i >= 0) goto after_loop_2;
+    lp2_sta:
+        if (!(i >= 0)) goto lp2_aft;
         dfdx[i] = (i + 1) * f[i + 1];   // Calculus!
-        goto loop_2;
-    after_loop_2:
+        i--;
+        goto lp2_sta;
+    lp2_aft:
 
     current_x = guess;
     update_count = 0;
 
-    loop_3:
-        current_f = polyval(f, POLY_DEGREE, current_x);
-        printf("%d update(s) done; x is %.15f; f(x) is %.15e\n",
-               update_count, current_x, current_f);
-        if (fabs(current_f) < MAX_ABS_F)
-            goto after_loop_3;
-        if (update_count == max_updates)
-            goto after_loop_3;
-        current_dfdx = polyval(dfdx, POLY_DEGREE - 1, current_x);
-        current_x -= current_f / current_dfdx;
-        update_count++;
-        goto loop_3;
-    after_loop_3:
+    lp3_sta:
+    current_f = polyval(f, POLY_DEGREE, current_x);
+    printf("%d update(s) done; x is %.15f; f(x) is %.15e\n",
+            update_count, current_x, current_f);
+    if (fabs(current_f) < MAX_ABS_F)
+        goto lp3_aft;
+    if (update_count == max_updates)
+        goto lp3_aft;
+    current_dfdx = polyval(dfdx, POLY_DEGREE - 1, current_x);
+    current_x -= current_f / current_dfdx;
+    update_count++;
+    goto lp3_sta;
+    lp3_aft:
     
-    if (fabs(current_f) >= MAX_ABS_F)
-        printf("%d updates performed, |f(x)| still >= %g.\n", 
-               update_count, MAX_ABS_F);
-    else
-        printf("Stopped with approximate solution of %.10f.\n", 
-               current_x);
+    if (!(fabs(current_f) >= MAX_ABS_F)) goto if1_els;
+    printf("%d updates performed, |f(x)| still >= %g.\n", update_count, MAX_ABS_F);
+    goto if1_aft;
+    if1_els:
+    printf("Stopped with approximate solution of %.10f.\n", current_x);
+    if1_aft:
     return 0;
 }
 
